@@ -29,9 +29,31 @@ class Team(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
     logo = models.ImageField(upload_to='team_logos/', blank=True, null=True)
-    members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='teams')
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through='TeamMembership',
+        related_name='teams'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
+
+class TeamMembership(models.Model):
+    ROLE_CHOICES = [
+        ('leader', 'Leader'),
+        ('member', 'Member'),
+        ('mentor', 'Mentor'),
+        # add more as needed
+    ]
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    role = models.CharField(max_length=30, choices=ROLE_CHOICES, default='member')
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('team', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.team.name} ({self.role})"
