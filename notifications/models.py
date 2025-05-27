@@ -51,3 +51,12 @@ def task_assignment_notification(sender, instance, created, **kwargs):
 def comment_notification(sender, instance, created, **kwargs):
     if created and instance.task.assignee:
         create_comment_notification(instance.task.assignee, instance)
+
+class Device(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='devices')
+    registration_id = models.CharField(max_length=256, unique=True)  # FCM token
+    device_type = models.CharField(max_length=20, choices=(('android', 'Android'), ('ios', 'iOS')))
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.device_type}"
